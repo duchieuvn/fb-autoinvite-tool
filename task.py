@@ -4,95 +4,89 @@ from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException, StaleElementReferenceException
 
 import pyautogui
+import tkinter as tk
+from tkinter import messagebox
 
 import os
 import threading
 import keyboard
 import time
 
-chrome_options = Options()
-chrome_options.add_argument("--guest")
-
-driver = webdriver.Chrome(options=chrome_options)
-driver.get('https://www.facebook.com/') 
-
-# email_field = driver.find_element(By.NAME, "email")
-# password_field = driver.find_element(By.NAME, "pass")
-
-# email_field.send_keys("0932140098")
-# password_field.send_keys("@Duchieu#")
-
-# login_button = driver.find_element(By.NAME, "login")
-# login_button.click()
+class MainApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title('Tool mời')
         
-keep_running = False
-scrolling_thread = None
+        self.root.geometry('400x150')
+        self.info1 = tk.Label(self.root, text='BẤM PHÍM CÁCH (KHOẢNG TRẮNG) ĐỂ MỜI TỰ ĐỘNG')
+        self.info1.pack(pady=10)
+        self.info2 = tk.Label(self.root, text='BẤM PHÍM "x" ĐỂ DỪNG LẠI')
+        self.info2.pack(pady=10)
 
-def scroll_to_invite():
-    global keep_running
-    while keep_running:
-        try:
-            if not keep_running:
-                break
+        self.root.protocol('WM_DELETE_WINDOW', self.on_closing)
+        
+        self.driver = self.start_up()
+        threading.Thread(target=self.keyboard_listener, daemon=True).start()
 
-            elements = driver.find_elements(By.XPATH, "//div[@aria-label='Mời' and @role='button']")
+    def load_default_gui(self):
+        pass
 
-            for element in elements:
-                driver.execute_script("arguments[0].style.border='3px solid red'", element)
-                # element.click()
+    def start_up(self):
+        chrome_options = Options()
+        chrome_options.add_argument('--guest')
 
-            pyautogui.scroll(-300)
-            time.sleep(0.1)
+        driver = webdriver.Chrome(options=chrome_options)
+        driver.get('https://www.facebook.com/') 
 
-        except NoSuchElementException:
-            print('NOT FOUND')
-            time.sleep(1)
-            continue
+        email_field = driver.find_element(By.NAME, 'email')
+        password_field = driver.find_element(By.NAME, 'pass')
 
-        except StaleElementReferenceException:
-            print('STALE ELEMENT')
-            time.sleep(1)
-            continue
+        email_field.send_keys('0932140098')
+        password_field.send_keys('@Duchieu#')
 
-    print("Scrolling stopped.")
+        login_button = driver.find_element(By.NAME, 'login')
+        login_button.click()
 
-def start_scrolling():
-    global keep_running, scrolling_thread
-    if not keep_running:  # Start only if not already running
-        os.system('cls')
-        print('---ĐANG LƯỚT ĐỂ MỜI---')
-        print('----------------------')
-        print('BẤM PHÍM "x" ĐỂ DỪNG LẠI')
-        keep_running = True
-        scrolling_thread = threading.Thread(target=scroll_to_invite)
-        scrolling_thread.start()
+        return driver
 
-def stop_scrolling():
-    global keep_running
-    if keep_running:
-        keep_running = False
-        if scrolling_thread:
-            scrolling_thread.join()  # Wait for the thread to finish
+    def scroll_to_invite(self):
+        while self.keep_running:
+            try:
+                elements = self.driver.find_elements_by_xpath("//div[@aria-label='Mời' and @role='button']")
+                for element in elements:
+                    self.driver.execute_script("arguments[0].style.border='3px solid red'", element)
+                time.sleep(0.2)
 
-def stop_program():
-    stop_scrolling()
-    os.system('cls')
-    print('--------ĐÃ DỪNG QUÁ TRÌNH MỜI TỰ ĐỘNG----------')
-    print('-----------------------------------------------')
-    print('BẤM PHÍM CÁCH (KHOẢNG TRẮNG) ĐỂ BẮT ĐẦU MỜI TỰ ĐỘNG')
-    print('BẤM PHÍM "ESC" ĐỂ THOÁT TOOL')
+            except Exception as e:
+                print(f"Error: {e}")
+                time.sleep(1)
 
-# Set up hotkeys
-def main():
-    os.system('cls')
-    print('BẤM PHÍM CÁCH (KHOẢNG TRẮNG) ĐỂ BẮT ĐẦU MỜI TỰ ĐỘNG')
-    print('BẤM PHÍM "ESC" ĐỂ THOÁT TOOL')
-    keyboard.add_hotkey('space', start_scrolling)  # Press space to start scrolling
-    keyboard.add_hotkey('x', stop_program)       # Press esc to stop the program
+        print("Scrolling stopped.")
 
-    while not keyboard.is_pressed('esc'):
-        keyboard.wait('esc')
+    def start_scrolling(self):
+        if not self.keep_running:
+            self.keep_running = True
+            self.scrolling_thread = threading.Thread(target=self.scroll_to_invite)
+            self.scrolling_thread.start()
+            # self.status_label.config(text="Scrolling started...")
 
-    driver.quit()
+    def stop_scrolling(self):
+        self.keep_running = False
+        if self.scrolling_thread:
+            self.scrolling_thread.join()
+            # self.status_label.config(text="Scrolling stopped.")
 
-main()
+
+    def keyboard_listener(self):
+        keyboard.add_hotkey('space', self.start_scrolling)
+        keyboard.add_hotkey('x', self.stop_scrolling)
+
+    def on_closing(self):
+        if messagebox.askokcancel('TẮT', 'BẠN MUỐN TẮT ?'):
+            self.driver.quit()
+            self.root.destroy()  
+
+if __name__ == '__main__':
+    root = tk.Tk()
+    app = MainApp(root)
+    root.mainloop()
