@@ -2,45 +2,70 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException, StaleElementReferenceException
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.common.action_chains import ActionChains
 
 import pyautogui
-import pygetwindow as gw
-
+import tkinter as tk
+from tkinter import messagebox
 
 import threading
 import keyboard
 import time
 
+class MainApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title('Tool mời')
+        
+        self.root.geometry('400x150')
+        self.info1 = tk.Label(self.root, text='BẤM PHÍM CÁCH (KHOẢNG TRẮNG) ĐỂ MỜI TỰ ĐỘNG')
+        self.info1.pack(pady=10)
+        self.info2 = tk.Label(self.root, text='BẤM PHÍM "x" ĐỂ DỪNG LẠI')
+        self.info2.pack(pady=10)
 
-user_data_dir = "C:/Users/trthd/AppData/Local/Google/Chrome/User Data"
-profile_dir = "Profile 3"
-chrome_options = Options()
-chrome_options.add_argument("--guest")
+        self.root.protocol('WM_DELETE_WINDOW', self.on_closing)
+         
+        self.state = {}
+        self.state['keep_scrolling'] = True
+        # Start a thread to listen for global key presses
+        self.listener_thread = threading.Thread(target=self.start_key_listener, daemon=True)
+        self.listener_thread.start()
+    
 
-driver = webdriver.Chrome(options=chrome_options)
-driver.get('https://github.com/SeleniumHQ') 
+    def start_up(self):
+        chrome_options = Options()
+        chrome_options.add_argument('--guest')
 
-stop = None
-while (stop!="yes"):
-    span_element = driver.find_element(By.XPATH, "//span[@class='repo' and text()='selenium']")
-    driver.execute_script("arguments[0].style.border='3px solid red'", span_element)
+        driver = webdriver.Chrome(options=chrome_options)
+        driver.get('https://www.facebook.com/') 
 
-    window = gw.getWindowsWithTitle(driver.title)[0]
-    window.maximize()
-    w_x, w_y = window.left, window.top
+        email_field = driver.find_element(By.NAME, 'email')
+        password_field = driver.find_element(By.NAME, 'pass')
 
-    element_location = span_element.location
-    e_x, e_y = element_location['x'], element_location['y']
-    print("window title:", driver.title)
-    print("top-left window position:",window.left, window.top)
-    print("element w-position:",e_x, e_y)
+        email_field.send_keys('0932140098')
+        password_field.send_keys('@Duchieu#')
 
-    pyautogui.moveTo(w_x+e_x, w_y+e_y,duration=1)
-    print("mouse position", pyautogui.position())
+        login_button = driver.find_element(By.NAME, 'login')
+        login_button.click()
 
-    stop = input("stop?")
+        return driver
 
+    def start_key_listener(self):
+        while self.state['keep_scrolling']:
+            if keyboard.is_pressed('space'):
+                self.start_scrolling()
 
-driver.quit()
+    def start_scrolling(self):
+        print('---scroll---')
+        for _ in range (20):
+            pyautogui.scroll(-300)
+            time.sleep(0.2)
+
+    def on_closing(self):
+        if messagebox.askokcancel('TẮT', 'BẠN MUỐN TẮT ?'):
+            self.driver.quit()
+            self.root.destroy()  
+
+if __name__ == '__main__':
+    root = tk.Tk()
+    app = MainApp(root)
+    root.mainloop()
