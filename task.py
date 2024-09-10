@@ -25,7 +25,8 @@ class MainApp:
         self.root.protocol('WM_DELETE_WINDOW', self.on_closing)
         
         self.driver = self.start_up()
-        self.root.bind("<space>", self.start_scrolling)
+        self.keyboard_thread = threading.Thread(target=self.start_key_listener, daemon=True)
+        self.keyboard_thread.start()
 
     def start_up(self):
         chrome_options = Options()
@@ -44,6 +45,11 @@ class MainApp:
         login_button.click()
 
         return driver
+    
+    def start_key_listener(self): 
+        while self.root.winfo_exists():
+            if keyboard.is_pressed('space'):
+                self.start_scrolling()
 
     def start_scrolling(self):
         print('---scroll---')
@@ -54,7 +60,8 @@ class MainApp:
     def on_closing(self):
         if messagebox.askokcancel('TẮT', 'BẠN MUỐN TẮT ?'):
             self.driver.quit()
-            self.root.destroy()  
+            self.keyboard_thread.join()
+            self.root.destroy()   
 
 if __name__ == '__main__':
     root = tk.Tk()

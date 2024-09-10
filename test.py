@@ -24,11 +24,8 @@ class MainApp:
 
         self.root.protocol('WM_DELETE_WINDOW', self.on_closing)
          
-        self.state = {}
-        self.state['keep_scrolling'] = True
-        # Start a thread to listen for global key presses
-        self.listener_thread = threading.Thread(target=self.start_key_listener, daemon=True)
-        self.listener_thread.start()
+        self.keyboard_thread = threading.Thread(target=self.start_key_listener, daemon=True)
+        self.keyboard_thread.start()
     
 
     def start_up(self):
@@ -49,8 +46,8 @@ class MainApp:
 
         return driver
 
-    def start_key_listener(self):
-        while self.state['keep_scrolling']:
+    def start_key_listener(self): 
+        while self.root.winfo_exists():
             if keyboard.is_pressed('space'):
                 self.start_scrolling()
 
@@ -63,6 +60,7 @@ class MainApp:
     def on_closing(self):
         if messagebox.askokcancel('TẮT', 'BẠN MUỐN TẮT ?'):
             self.driver.quit()
+            self.keyboard_thread.join()
             self.root.destroy()  
 
 if __name__ == '__main__':
