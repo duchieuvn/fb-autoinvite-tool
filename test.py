@@ -6,6 +6,7 @@ from selenium.common.exceptions import NoSuchElementException, StaleElementRefer
 import pyautogui
 import tkinter as tk
 from tkinter import ttk
+from tkinter import PhotoImage
 from tkinter import messagebox
 
 import threading
@@ -16,22 +17,20 @@ class MainApp:
     def __init__(self, root):
         self.root = root
         self.root.title('Tool mời')
-        self.root.geometry('400x150')
+        self.root.geometry('450x200')
         self.is_scrolling = False
         self.scrolling_thread = None
-
-        self.info1 = tk.Label(self.root, text='BẤM PHÍM CÁCH (KHOẢNG TRẮNG) ĐỂ MỜI TỰ ĐỘNG')
-        self.info1.pack(pady=5)
-        self.info2 = tk.Label(self.root, text='BẤM PHÍM "x" ĐỂ DỪNG LẠI')
-        self.info2.pack(pady=5)
-
         self.root.protocol('WM_DELETE_WINDOW', self.on_closing)
-        
-        self.driver = self.start_driver()
-        # self.keyboard_thread = threading.Thread(target=self.listen_keyboard, daemon=True)
-        # self.keyboard_thread.start()
-        keyboard.add_hotkey('space', self.start_scrolling)  
-        keyboard.add_hotkey('x', self.pause)  
+
+        self.img_path = PhotoImage(file="img.png")
+        self.bg = tk.Label(self.root, image=self.img_path, width=450, height=300)
+        self.bg.place(relheight=1, relwidth=1)
+
+        self.info1 = tk.Label(self.root, text='BẤM PHÍM CÁCH (KHOẢNG TRẮNG) ĐỂ MỜI TỰ ĐỘNG', font='Arial 10')
+        self.info2 = tk.Label(self.root, text='BẤM PHÍM "x" ĐỂ DỪNG LẠI', font='Arial 10')
+        self.info1.pack(padx=5, pady=5, anchor="w")
+        self.info2.pack(padx=5, anchor="w")
+
 
         self.delay_time = tk.DoubleVar()
         self.delay_time.set(0.2)
@@ -39,17 +38,11 @@ class MainApp:
         self.radio1 = tk.Radiobutton(root, text="Chậm", variable=self.delay_time, value=1)
         self.radio2 = tk.Radiobutton(root, text="Vừa", variable=self.delay_time, value=0.5)
         self.radio3 = tk.Radiobutton(root, text="Nhanh", variable=self.delay_time, value=0.2)
-        # self.radio3 = tk.Radiobutton(root, text="Nhanh", variable=self.scrolling_speed, value=2, command=self.on_select)
 
-        # Pack the radio buttons on the window
-        self.radio1.pack(pady=5)
-        self.radio2.pack(pady=5)
-        self.radio3.pack(pady=5)
+        self.radio1.pack(padx=5, pady=5, anchor="w")
+        self.radio2.pack(padx=5, pady=5, anchor="w")
+        self.radio3.pack(padx=5, pady=5, anchor="w")
 
-
-    def on_select(self):
-        selected = self.delay_time.get()  # Get the current value of the selected radio button
-        print(f"You selected: {selected}")
 
     def start_driver(self):
         chrome_options = Options()
@@ -93,7 +86,7 @@ class MainApp:
 
     def on_closing(self):
         if messagebox.askokcancel('TẮT', 'BẠN MUỐN TẮT ?'):
-            self.driver.quit()
+            # self.driver.quit()
             self.root.destroy()   
 
 if __name__ == '__main__':
