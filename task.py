@@ -15,10 +15,11 @@ import time
 class MainApp:
     def __init__(self, root):
         self.root = root
-        self.root.title('Tool mời')
+        self.root.title('FacebookAutoTool@duchieuvn')
         self.root.geometry('400x200')
         self.root.protocol('WM_DELETE_WINDOW', self.on_closing)
-
+        self.icon = PhotoImage(file="icon.png")  
+        self.root.iconphoto(True, self.icon)
         self.config_ui()
 
         self.is_scrolling = False
