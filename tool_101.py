@@ -15,7 +15,7 @@ import time
 class MainApp:
     def __init__(self, root):
         self.root = root
-        self.root.title('Tool mời')
+        self.root.title('FacebookAutoTool@duchieuvn')
         self.root.geometry('400x200')
         self.root.protocol('WM_DELETE_WINDOW', self.on_closing)
 
@@ -57,15 +57,6 @@ class MainApp:
         self.driver = webdriver.Chrome(options=chrome_options)
         self.driver.get('https://www.facebook.com/') 
 
-        email_field = self.driver.find_element(By.NAME, 'email')
-        password_field = self.driver.find_element(By.NAME, 'pass')
-
-        email_field.send_keys('0932140098')
-        password_field.send_keys('@Duchieu#')
-
-        login_button = self.driver.find_element(By.NAME, 'login')
-        login_button.click()
-
     def start_scrolling(self):
         if not self.is_scrolling:  
             self.is_scrolling = True
@@ -73,14 +64,13 @@ class MainApp:
             self.scrolling_thread.start()
     
     def scroll(self):
-        print('---scroll---')
         self.is_scrolling = True
         while self.is_scrolling:
             try:
-                elements = self.driver.find_elements(By.XPATH, "//div[@aria-label='Thêm bạn bè' and @role='button']")
+                elements = self.driver.find_elements(By.XPATH, "//div[@aria-label='Mời' and @role='button']")
                 for invite_button in elements:
-                    self.driver.execute_script("arguments[0].style.border='3px solid red'", invite_button)
-                    # invite_button.click()
+                    # self.driver.execute_script("arguments[0].style.border='3px solid red'", invite_button)
+                    invite_button.click()
                 
                 pyautogui.scroll(-300)
                 time.sleep(self.delay_time.get())
@@ -99,7 +89,6 @@ class MainApp:
                 print('Error', e)
 
     def pause(self):
-        print('---pause---')
         self.is_scrolling = False
 
 
